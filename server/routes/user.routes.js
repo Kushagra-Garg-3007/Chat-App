@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const controllers = require('../controllers/user.controller.js');
+const verifyJWT = require('../middlewares/auth.middleware.js');
 
-router.get('/login',(req,res)=>{
-  res.send("user login page");
-})
+router.post('/register', controllers.registerUser);
+router.post('/login', controllers.loginUser);
+router.post('/logout', verifyJWT, controllers.logoutUser);
 
-
-module.exports= router;
+module.exports = router;
