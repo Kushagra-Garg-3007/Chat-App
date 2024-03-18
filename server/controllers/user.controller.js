@@ -51,13 +51,13 @@ const registerUser = async (req, res) => {
 }
 
 const loginUser = async (req, res) => {
-  let { userName, password } = req.body;
-  if (userName === null || password === null) {
+  let { email, password } = req.body;
+  if (email === null || password === null) {
     return res.status(400).json({
-      message: "user dertails required"
+      message: "user details required"
     })
   }
-  const user = await User.findOne({ userName });
+  const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: "user not found" });
   const validpass = await user.isPasswordCorrect(password);
   if (!validpass) return res.status(409).json({ message: "incorrect password" });
