@@ -3,8 +3,8 @@ import './App.css'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './components/Login'
 import Register from './components/Register';
+import ChatPage from './components/ChatPage';
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <Router>
@@ -12,6 +12,8 @@ function App() {
         <Route path='/' element={<Login />}></Route>
         <Route path='/login' element={<Login />}></Route>
         <Route path='/register' element={<Register />}></Route>
+        <Route path='/chatPage' element={<ChatPage />}></Route>
+
       </Routes>
     </Router>
   )

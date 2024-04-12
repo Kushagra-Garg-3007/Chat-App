@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 
 function Login() {
+
+  const navigateTo = useNavigate();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -21,6 +23,9 @@ function Login() {
     try {
       const response = await axios.post('/user/login', formData);
       console.log('form submitted successfully', response);
+
+      if (response) navigateTo('/chatPage')
+
     } catch (error) {
       console.log("error while submitting form", error);
     }
