@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Register() {
+
+  const navigateTo = useNavigate();
+
   const [formData, setFormData] = useState({
     userName: '',
     fullName: '',
     email: '',
-    password:''
+    password: ''
   });
 
   const handleInputChange = (event) => {
@@ -16,12 +19,15 @@ function Register() {
     setFormData({ ...formData, [name]: value });
   }
 
-  const handleSubmit=async (e)=>{
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const response = axios
-      .post("/user/register",formData)
-      .then(res => console.log("user registerred Succesfully",res) )
-      .catch(err => console.error("error while registering user",err));
+      .post("/user/register", formData)
+      .then(res => {
+        console.log("user registerred Succesfully", res);
+        navigateTo('/login');
+      })
+      .catch(err => console.error("error while registering user", err));
   }
 
   return (
