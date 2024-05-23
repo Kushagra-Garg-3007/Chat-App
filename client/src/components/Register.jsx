@@ -1,34 +1,40 @@
-import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react";
+import { ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Register() {
-
   const navigateTo = useNavigate();
 
   const [formData, setFormData] = useState({
-    userName: '',
-    fullName: '',
-    email: '',
-    password: ''
+    userName: "",
+    fullName: "",
+    email: "",
+    password: "",
+    avatar: null,
   });
 
   const handleInputChange = (event) => {
-    let { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  }
+    if (event.target.name === "avatar") {
+      const file = event.target.files[0];
+      setFormData({ ...formData, avatar: file });
+    } else {
+      const { name, value } = event.target;
+      setFormData({ ...formData, [name]: value });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = axios
-      .post("/user/register", formData)
-      .then(res => {
-        console.log("user registerred Succesfully", res);
-        navigateTo('/login');
-      })
-      .catch(err => console.error("error while registering user", err));
-  }
+    const formDataToSend = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      formDataToSend.append(key, value);
+    });
+    console.log(formDataToSend);
+    const response = await axios.post("/user/register", formDataToSend);
+    console.log("user registerred Successfully", response.data);
+    navigateTo("/login");
+  };
 
   return (
     <section>
@@ -38,7 +44,7 @@ function Register() {
             Sign up to create account
           </h2>
           <p className="mt-2 text-center text-base text-gray-400">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link
               to="/login"
               title=""
@@ -47,13 +53,18 @@ function Register() {
               LogIn
             </Link>
           </p>
-          <form action="" method="POST" onSubmit={handleSubmit} className="mt-8">
+          <form
+            action=""
+            method="POST"
+            onSubmit={handleSubmit}
+            className="mt-8"
+          >
             <div className="space-y-5">
               <div className="mt-2">
                 <input
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-[#191926] px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   type="text"
-                  name='userName'
+                  name="userName"
                   value={formData.userName}
                   onChange={handleInputChange}
                   placeholder="Enter your UserName"
@@ -68,7 +79,7 @@ function Register() {
                   placeholder="Enter Your Full Name"
                   id="name"
                   value={formData.fullName}
-                  name='fullName'
+                  name="fullName"
                   onChange={handleInputChange}
                   required
                 ></input>
@@ -78,7 +89,7 @@ function Register() {
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-[#191926] px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   type="email"
                   placeholder="Enter Your Email"
-                  name='email'
+                  name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   id="email"
@@ -89,13 +100,23 @@ function Register() {
                 <input
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-[#191926] px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   type="password"
-                  name='password'
+                  name="password"
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Enter Your Password"
                   id="password"
                   required
                 ></input>
+              </div>
+              <div className="mt-2">
+                <input
+                  className="flex h-10 w-full rounded-md border border-gray-300 bg-[#191926] px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="file"
+                  name="avatar"
+                  id="avatar"
+                  onChange={handleInputChange}
+                  required
+                />
               </div>
               <div>
                 <button

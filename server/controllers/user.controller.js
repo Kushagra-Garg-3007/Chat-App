@@ -1,98 +1,37 @@
 const User = require('../models/user.model.js');
+const uploadOnCloudinary=require('../utils/cloudinary.js');
+const getUsers = async (req, res) => {
 
-const generateToken = async (id) => {
+  const users = await User.find({ _id: { $ne: req.user._id } }).select("-password");
+  if (!users) return res.status(500).json({ message: "no user found" });
+  return res.status(200).json(users);
+}
+
+const updateUser = async (req, res) => {
   try {
-    const user = await User.findOne(id);
-    const accessToken = await user.generateAcessToken();
-    const refreshToken = await user.generateRefreshToken();
-    user.refreshToken = refreshToken;
-    await user.save({ validityBeforeSave: false });
-    return { accessToken, refreshToken };
-  } catch (error) {
-    return "error while generating tokens";
-  }
-}
-
-const registerUser = async (req, res) => {
-  let { userName, fullName, email, password } = req.body;
-  if ([userName, fullName, email, password].some((field) => field.trim() === "")) {
-    return res.status(400).json({
-      message: "All fields required"
-    })
-  }
-  const existedUser = await User.findOne({
-    $or: [{ userName, email }]
-  });
-
-  if (existedUser) {
-    return res.status(409).json({
-      message: "User Already Exists"
-    })
-  }
-
-  const user = await User.create({
-    userName,
-    fullName,
-    email,
-    password
-  })
-
-  if (!user) {
-    return res.status(500).json({
-      message: "cant create user"
-    })
-  }
-
-  return res.status(200).json({
-    message: "user created succesfully",
-    user
-  })
-
-}
-
-const loginUser = async (req, res) => {
-  let { email, password } = req.body;
-  if (email === null || password === null) {
-    return res.status(400).json({
-      message: "user details required"
-    })
-  }
-  const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ message: "user not found" });
-  const validpass = await user.isPasswordCorrect(password);
-  if (!validpass) return res.status(409).json({ message: "incorrect password" });
-  const { accessToken, refreshToken } = await generateToken(user._id);
-  const options = {
-    httpOnly: true,
-    secure: true
-  }
-  return res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({
-    message: "user loggedIn successfully",
-    user
-  })
-}
-
-const logoutUser = async (req, res) => {
-
-  await User.findByIdAndUpdate(req.user._id,
-    {
-      $set: {
-        refreshToken: null,
-      }
-    },
-    {
-      new: true
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json("User not found");
+    let cloudPath;
+    const avatarpath = req?.file?.path;
+    if (avatarpath) {
+      cloudPath = await uploadOnCloudinary(avatarpath);
     }
-  );
-  const options = {
-    httpOnly: true,
-    secure: true
+
+    const updatedUserData = {
+      ...req.body,
+      avatar: cloudPath ? cloudPath.url : user.avatar // If cloudPath is available, use its URL, otherwise retain the existing avatar URL
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updatedUserData, { new: true });
+
+    if (updatedUser) return res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json({
-    message: "user loggedout successfully",
-    user: await User.findById(req.user._id)
-  });
-}
+};
 
 
-module.exports = { registerUser, loginUser, logoutUser };
+
+
+module.exports = { getUsers,updateUser };
